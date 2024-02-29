@@ -1,11 +1,26 @@
-FROM centos:7
-RUN yum install java-11-openjdk -y
-ADD https://dlcdn.apache.org/tomcat/tomcat-8/v8.5.98/bin/apache-tomcat-8.5.98.tar.gz ./
-RUN tar -xzf apache-tomcat-8.5.98.tar.gz -C /opt/ && \
-    rm -rf ./apache-tomcat-8.5.98.tar.gz
+FROM ubuntu:20.04
+RUN apt-get update && \
+    apt-get install -y openjdk-11-jdk && \
+    apt-get clean
+
+# Apache Tomcat Installation
+ADD https://dlcdn.apache.org/tomcat/tomcat-8/v8.5.98/bin/apache-tomcat-8.5.98.tar.gz /tmp/
+RUN tar -xzf /tmp/apache-tomcat-8.5.98.tar.gz -C /opt/ && \
+    rm -rf /tmp/apache-tomcat-8.5.98.tar.gz
+
 WORKDIR /opt/apache-tomcat-8.5.98
+
+# Custom Context Configuration
 COPY context.xml conf/context.xml
+
+# MySQL Connector
 ADD https://s3-us-west-2.amazonaws.com/studentapi-cit/mysql-connector.jar lib/mysql-connector.jar
+
+# Deploy Application
 COPY student.war webapps/student.war
+
+# Expose Port
 EXPOSE 8080
+
+# Startup Command
 CMD ["./bin/catalina.sh", "run"]
